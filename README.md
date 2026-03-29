@@ -13,3 +13,11 @@ PewPlanner is a simple and portable node graph that lets you plan out simple flo
 ### Simple Navigation
 - Pan: Middle Mouse Drag or Arrow Keys
 - Zoom: Middle Mouse Wheel or +/- UI buttons
+
+## 📸 Screenshots
+
+### Basic Graph Diagram/Explanation Notes
+![Basic Layout](Assets/Screenshots/graph1.jpg)
+
+### Split / Converge Example
+![Split Graph](Assets/Screenshots/graph2.jpg)
