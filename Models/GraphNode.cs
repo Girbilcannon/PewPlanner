@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Text.Json.Serialization;
 
@@ -6,6 +7,8 @@ namespace PewPlanner.Models
 {
     public class GraphNode
     {
+        public string Id { get; set; } = CreateNewId();
+
         public string Title { get; set; } = "Node";
         public string Notes { get; set; } = string.Empty;
 
@@ -28,6 +31,7 @@ namespace PewPlanner.Models
 
         public GraphNode(string title, int x, int y)
         {
+            Id = CreateNewId();
             Title = title;
             X = x;
             Y = y;
@@ -43,6 +47,7 @@ namespace PewPlanner.Models
             set => NodeColorArgb = value.ToArgb();
         }
 
+        [JsonIgnore]
         public int Height
         {
             get
@@ -64,6 +69,27 @@ namespace PewPlanner.Models
         public Point GetOutputSocketPosition(int index)
         {
             return new Point(X + Width, Y + HeaderHeight + 16 + (index * SocketSpacing));
+        }
+
+        public void EnsureId()
+        {
+            if (string.IsNullOrWhiteSpace(Id))
+                Id = CreateNewId();
+        }
+
+        public static string CreateNewId()
+        {
+            const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+            Span<char> buffer = stackalloc char[6];
+            string guid = Guid.NewGuid().ToString("N");
+
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                int value = Convert.ToInt32(guid.Substring(i * 2, 2), 16);
+                buffer[i] = chars[value % chars.Length];
+            }
+
+            return "n_" + new string(buffer);
         }
     }
 }

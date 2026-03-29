@@ -8,6 +8,12 @@ namespace PewPlanner
 {
     public class MainForm : Form
     {
+        private const int ResizeBorderSize = 8;
+        private const int OuterMargin = 8;
+        private const int TitleBarHeight = 56;
+        private const int RightPaneWidth = 310;
+        private const int FooterHeight = 56;
+
         private Panel _titleBar = null!;
         private Label _lblTitle = null!;
         private HudButton _btnAddNode = null!;
@@ -70,12 +76,7 @@ namespace PewPlanner
         {
             _titleBar = new Panel
             {
-                Left = 0,
-                Top = 0,
-                Width = ClientSize.Width,
-                Height = 56,
-                BackColor = Theme.TitleBar,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right
+                BackColor = Theme.TitleBar
             };
 
             _titleBar.MouseDown += TitleBar_MouseDown;
@@ -96,22 +97,18 @@ namespace PewPlanner
             _btnAddNode = new HudButton
             {
                 Text = "Add Node +",
-                Left = 255,
                 Top = 12,
                 Width = 110,
-                Height = 32,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left
+                Height = 32
             };
             _btnAddNode.Click += (_, _) => _graph.AddNode();
 
             _btnRecenter = new HudButton
             {
                 Text = "Recenter",
-                Left = 375,
                 Top = 12,
                 Width = 96,
-                Height = 32,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left
+                Height = 32
             };
             _btnRecenter.Click += (_, _) => _graph.CenterView();
 
@@ -120,9 +117,7 @@ namespace PewPlanner
                 Text = "—",
                 Width = 38,
                 Height = 28,
-                Left = ClientSize.Width - 126,
-                Top = 14,
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
+                Top = 14
             };
             _btnMinimize.Click += (_, _) => WindowState = FormWindowState.Minimized;
 
@@ -131,9 +126,7 @@ namespace PewPlanner
                 Text = "□",
                 Width = 38,
                 Height = 28,
-                Left = ClientSize.Width - 84,
-                Top = 14,
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
+                Top = 14
             };
             _btnMaximize.Click += (_, _) => ToggleMaximize();
 
@@ -142,9 +135,7 @@ namespace PewPlanner
                 Text = "×",
                 Width = 38,
                 Height = 28,
-                Left = ClientSize.Width - 42,
-                Top = 14,
-                Anchor = AnchorStyles.Top | AnchorStyles.Right
+                Top = 14
             };
             _btnClose.Click += (_, _) => Close();
 
@@ -162,12 +153,7 @@ namespace PewPlanner
         {
             _rightPane = new Panel
             {
-                Width = 310,
-                Left = ClientSize.Width - 310,
-                Top = 56,
-                Height = ClientSize.Height - 56,
-                BackColor = Theme.CardBackAlt,
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right
+                BackColor = Theme.CardBackAlt
             };
 
             _lblPropHeader = new Label
@@ -243,17 +229,8 @@ namespace PewPlanner
 
         private void BuildGraphCanvas()
         {
-            _graph = new GraphCanvas
-            {
-                Left = 0,
-                Top = 56,
-                Width = ClientSize.Width - _rightPane.Width,
-                Height = ClientSize.Height - 112,
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
-            };
-
+            _graph = new GraphCanvas();
             _graph.SelectedNodeChanged += Graph_SelectedNodeChanged;
-
             Controls.Add(_graph);
         }
 
@@ -262,22 +239,16 @@ namespace PewPlanner
             _btnSave = new HudButton
             {
                 Text = "Save Layout",
-                Left = 18,
-                Top = ClientSize.Height - 46,
                 Width = 140,
-                Height = 32,
-                Anchor = AnchorStyles.Left | AnchorStyles.Bottom
+                Height = 32
             };
             _btnSave.Click += (_, _) => SaveLayout();
 
             _btnLoad = new HudButton
             {
                 Text = "Load Layout",
-                Left = 166,
-                Top = ClientSize.Height - 46,
                 Width = 140,
-                Height = 32,
-                Anchor = AnchorStyles.Left | AnchorStyles.Bottom
+                Height = 32
             };
             _btnLoad.Click += (_, _) => LoadLayout();
 
@@ -285,10 +256,7 @@ namespace PewPlanner
             {
                 Text = "-",
                 Width = 44,
-                Height = 32,
-                Top = ClientSize.Height - 46,
-                Left = (ClientSize.Width - _rightPane.Width) / 2 - 48,
-                Anchor = AnchorStyles.Bottom
+                Height = 32
             };
             _btnZoomOut.Click += (_, _) => _graph.ZoomOut();
 
@@ -296,10 +264,7 @@ namespace PewPlanner
             {
                 Text = "+",
                 Width = 44,
-                Height = 32,
-                Top = ClientSize.Height - 46,
-                Left = (ClientSize.Width - _rightPane.Width) / 2 + 4,
-                Anchor = AnchorStyles.Bottom
+                Height = 32
             };
             _btnZoomIn.Click += (_, _) => _graph.ZoomIn();
 
@@ -308,9 +273,6 @@ namespace PewPlanner
                 Text = "Clear Graph",
                 Width = 110,
                 Height = 32,
-                Left = ClientSize.Width - _rightPane.Width - 128,
-                Top = ClientSize.Height - 46,
-                Anchor = AnchorStyles.Right | AnchorStyles.Bottom,
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Theme.CardBackAlt,
                 ForeColor = Color.FromArgb(220, 90, 90),
@@ -327,6 +289,87 @@ namespace PewPlanner
             Controls.Add(_btnZoomOut);
             Controls.Add(_btnZoomIn);
             Controls.Add(_btnClearGraph);
+        }
+
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+            LayoutCustomUi();
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            LayoutCustomUi();
+        }
+
+        private void LayoutCustomUi()
+        {
+            if (_titleBar == null || _graph == null || _rightPane == null ||
+                _btnSave == null || _btnLoad == null || _btnZoomOut == null ||
+                _btnZoomIn == null || _btnClearGraph == null ||
+                _btnAddNode == null || _btnRecenter == null ||
+                _btnMinimize == null || _btnMaximize == null || _btnClose == null)
+            {
+                return;
+            }
+
+            int contentLeft = OuterMargin;
+            int contentTop = OuterMargin;
+            int contentWidth = ClientSize.Width - (OuterMargin * 2);
+            int contentHeight = ClientSize.Height - (OuterMargin * 2);
+
+            if (contentWidth <= 0 || contentHeight <= 0)
+                return;
+
+            _titleBar.SetBounds(
+                contentLeft,
+                contentTop,
+                contentWidth,
+                TitleBarHeight);
+
+            _btnAddNode.Left = 255;
+            _btnRecenter.Left = 375;
+
+            _btnMinimize.Left = _titleBar.Width - 126;
+            _btnMaximize.Left = _titleBar.Width - 84;
+            _btnClose.Left = _titleBar.Width - 42;
+
+            int bodyTop = contentTop + TitleBarHeight;
+            int footerTop = ClientSize.Height - OuterMargin - 46;
+            int bodyHeight = footerTop - bodyTop - 10;
+
+            _rightPane.SetBounds(
+                ClientSize.Width - OuterMargin - RightPaneWidth,
+                bodyTop,
+                RightPaneWidth,
+                ClientSize.Height - bodyTop - OuterMargin);
+
+            int graphWidth = _rightPane.Left - contentLeft;
+            int graphHeight = bodyHeight;
+
+            _graph.SetBounds(
+                contentLeft,
+                bodyTop,
+                Math.Max(100, graphWidth),
+                Math.Max(100, graphHeight));
+
+            _btnSave.Left = contentLeft + 10;
+            _btnSave.Top = footerTop;
+
+            _btnLoad.Left = _btnSave.Right + 8;
+            _btnLoad.Top = footerTop;
+
+            int graphCenterX = _graph.Left + (_graph.Width / 2);
+
+            _btnZoomOut.Left = graphCenterX - 48;
+            _btnZoomOut.Top = footerTop;
+
+            _btnZoomIn.Left = graphCenterX + 4;
+            _btnZoomIn.Top = footerTop;
+
+            _btnClearGraph.Left = _rightPane.Left - 118;
+            _btnClearGraph.Top = footerTop;
         }
 
         private void Graph_SelectedNodeChanged(GraphNode? node)
@@ -455,6 +498,64 @@ namespace PewPlanner
 
             Left += e.X - _dragStart.X;
             Top += e.Y - _dragStart.Y;
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            const int WM_NCHITTEST = 0x84;
+            const int HTCLIENT = 1;
+            const int HTLEFT = 10;
+            const int HTRIGHT = 11;
+            const int HTTOP = 12;
+            const int HTTOPLEFT = 13;
+            const int HTTOPRIGHT = 14;
+            const int HTBOTTOM = 15;
+            const int HTBOTTOMLEFT = 16;
+            const int HTBOTTOMRIGHT = 17;
+
+            if (m.Msg == WM_NCHITTEST && WindowState == FormWindowState.Normal)
+            {
+                base.WndProc(ref m);
+
+                if ((int)m.Result == HTCLIENT)
+                {
+                    Point p = PointToClient(GetMousePointFromLParam(m.LParam));
+
+                    bool left = p.X >= 0 && p.X < ResizeBorderSize;
+                    bool right = p.X <= ClientSize.Width && p.X > ClientSize.Width - ResizeBorderSize;
+                    bool top = p.Y >= 0 && p.Y < ResizeBorderSize;
+                    bool bottom = p.Y <= ClientSize.Height && p.Y > ClientSize.Height - ResizeBorderSize;
+
+                    if (left && top)
+                        m.Result = (IntPtr)HTTOPLEFT;
+                    else if (right && top)
+                        m.Result = (IntPtr)HTTOPRIGHT;
+                    else if (left && bottom)
+                        m.Result = (IntPtr)HTBOTTOMLEFT;
+                    else if (right && bottom)
+                        m.Result = (IntPtr)HTBOTTOMRIGHT;
+                    else if (left)
+                        m.Result = (IntPtr)HTLEFT;
+                    else if (right)
+                        m.Result = (IntPtr)HTRIGHT;
+                    else if (top)
+                        m.Result = (IntPtr)HTTOP;
+                    else if (bottom)
+                        m.Result = (IntPtr)HTBOTTOM;
+                }
+
+                return;
+            }
+
+            base.WndProc(ref m);
+        }
+
+        private static Point GetMousePointFromLParam(IntPtr lParam)
+        {
+            int value = lParam.ToInt32();
+            int x = (short)(value & 0xFFFF);
+            int y = (short)((value >> 16) & 0xFFFF);
+            return new Point(x, y);
         }
     }
 }

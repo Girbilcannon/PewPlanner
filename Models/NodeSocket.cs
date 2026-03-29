@@ -12,6 +12,11 @@ namespace PewPlanner.Models
         public int Index { get; set; }
         public bool IsConnected { get; set; }
 
+        // Serialized directional link data for tools that inspect sockets directly.
+        // Meaningful for input sockets because each input accepts only one incoming connection.
+        public string ConnectedFromNodeId { get; set; } = string.Empty;
+        public int ConnectedFromSocketIndex { get; set; } = -1;
+
         public NodeSocket()
         {
         }
@@ -22,6 +27,14 @@ namespace PewPlanner.Models
             IsInput = isInput;
             Index = index;
             IsConnected = false;
+            ConnectedFromNodeId = string.Empty;
+            ConnectedFromSocketIndex = -1;
+        }
+
+        public void ClearSerializedConnection()
+        {
+            ConnectedFromNodeId = string.Empty;
+            ConnectedFromSocketIndex = -1;
         }
 
         public Point GetPosition()

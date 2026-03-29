@@ -10,10 +10,10 @@ namespace PewPlanner.Models
         [JsonIgnore]
         public NodeSocket To { get; set; } = null!;
 
-        public string FromNodeTitle { get; set; } = string.Empty;
+        public string FromNodeId { get; set; } = string.Empty;
         public int FromSocketIndex { get; set; }
 
-        public string ToNodeTitle { get; set; } = string.Empty;
+        public string ToNodeId { get; set; } = string.Empty;
         public int ToSocketIndex { get; set; }
 
         public NodeConnection()
@@ -24,20 +24,18 @@ namespace PewPlanner.Models
         {
             From = from;
             To = to;
-
-            FromNodeTitle = from.Node.Title;
-            FromSocketIndex = from.Index;
-
-            ToNodeTitle = to.Node.Title;
-            ToSocketIndex = to.Index;
+            RefreshSerializedRefs();
         }
 
         public void RefreshSerializedRefs()
         {
-            FromNodeTitle = From.Node.Title;
+            From.Node.EnsureId();
+            To.Node.EnsureId();
+
+            FromNodeId = From.Node.Id;
             FromSocketIndex = From.Index;
 
-            ToNodeTitle = To.Node.Title;
+            ToNodeId = To.Node.Id;
             ToSocketIndex = To.Index;
         }
     }
