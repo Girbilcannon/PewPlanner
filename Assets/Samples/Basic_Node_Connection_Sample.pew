@@ -1,0 +1,86 @@
+{
+  "Nodes": [
+    {
+      "Id": "n_kjyu8j",
+      "Title": "Node 1",
+      "Notes": "Basic split example...\r\nEach node is connected viea input/output index 0. The input references the output node\u0027s index as well as unique ID.",
+      "X": -391,
+      "Y": -21,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -14538961,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_hpazmi",
+      "Title": "Node 2",
+      "Notes": "",
+      "X": -53,
+      "Y": -21,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -14538961,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_kjyu8j",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    }
+  ],
+  "Connections": [
+    {
+      "FromNodeId": "n_kjyu8j",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_hpazmi",
+      "ToSocketIndex": 0
+    }
+  ]
+}

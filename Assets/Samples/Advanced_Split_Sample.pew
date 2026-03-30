@@ -1,0 +1,796 @@
+{
+  "Nodes": [
+    {
+      "Id": "n_dwj9fc",
+      "Title": "W1-Z3 Start",
+      "Notes": "Start here!",
+      "X": -658,
+      "Y": 773,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -16744448,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_tf7ynl",
+      "Title": "CP1",
+      "Notes": "",
+      "X": -301,
+      "Y": 773,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -8388353,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_dwj9fc",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_flue57",
+      "Title": "Path 1 Split",
+      "Notes": "Splits path 1 into 3.",
+      "X": 493,
+      "Y": 374,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -14538961,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_ywpyg3",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 2,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 3,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_741qd7",
+      "Title": "P1A - CP2",
+      "Notes": "",
+      "X": 934,
+      "Y": 237,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -16760704,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_flue57",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_4wvi8s",
+      "Title": "P1B - CP2",
+      "Notes": "",
+      "X": 928,
+      "Y": 400,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -65281,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_flue57",
+          "ConnectedFromSocketIndex": 1
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_g0aykx",
+      "Title": "P1A - CP3",
+      "Notes": "",
+      "X": 1405,
+      "Y": 237,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -16760704,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_741qd7",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_ewrntp",
+      "Title": "P1B - CP3",
+      "Notes": "",
+      "X": 1415,
+      "Y": 402,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -65281,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_4wvi8s",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_qw4zkw",
+      "Title": "Converge",
+      "Notes": "Converges all of path 1 splits as well as path 2 back to a single path.",
+      "X": 1988,
+      "Y": 407,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -14538961,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_g0aykx",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_ewrntp",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 2,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_ipoeeq",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 3,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_wi689r",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 4,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_z8udun",
+      "Title": "CP4",
+      "Notes": "",
+      "X": 2253,
+      "Y": 409,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -8388353,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_qw4zkw",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_gkhhok",
+      "Title": "W1-Z3 Boss",
+      "Notes": "END!",
+      "X": 2529,
+      "Y": 408,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -16744448,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_z8udun",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_x01ipq",
+      "Title": "P1C - CP2",
+      "Notes": "",
+      "X": 936,
+      "Y": 590,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -32768,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_flue57",
+          "ConnectedFromSocketIndex": 2
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_ipoeeq",
+      "Title": "P1C - CP3",
+      "Notes": "",
+      "X": 1411,
+      "Y": 597,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -32768,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_x01ipq",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_ywpyg3",
+      "Title": "Path Split",
+      "Notes": "Splits main path into 2",
+      "X": 71,
+      "Y": 779,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -14538961,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_tf7ynl",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 2,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_xivjif",
+      "Title": "P2 - CP2",
+      "Notes": "",
+      "X": 937,
+      "Y": 814,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -8372160,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_ywpyg3",
+          "ConnectedFromSocketIndex": 1
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    },
+    {
+      "Id": "n_wi689r",
+      "Title": "P2 - CP3",
+      "Notes": "",
+      "X": 1417,
+      "Y": 813,
+      "Width": 170,
+      "HeaderHeight": 34,
+      "SocketSpacing": 20,
+      "BodyPaddingBottom": 14,
+      "NodeColorArgb": -8372160,
+      "Inputs": [
+        {
+          "IsInput": true,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "n_xivjif",
+          "ConnectedFromSocketIndex": 0
+        },
+        {
+          "IsInput": true,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ],
+      "Outputs": [
+        {
+          "IsInput": false,
+          "Index": 0,
+          "IsConnected": true,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        },
+        {
+          "IsInput": false,
+          "Index": 1,
+          "IsConnected": false,
+          "ConnectedFromNodeId": "",
+          "ConnectedFromSocketIndex": -1
+        }
+      ]
+    }
+  ],
+  "Connections": [
+    {
+      "FromNodeId": "n_dwj9fc",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_tf7ynl",
+      "ToSocketIndex": 0
+    },
+    {
+      "FromNodeId": "n_flue57",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_741qd7",
+      "ToSocketIndex": 0
+    },
+    {
+      "FromNodeId": "n_flue57",
+      "FromSocketIndex": 1,
+      "ToNodeId": "n_4wvi8s",
+      "ToSocketIndex": 0
+    },
+    {
+      "FromNodeId": "n_741qd7",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_g0aykx",
+      "ToSocketIndex": 0
+    },
+    {
+      "FromNodeId": "n_4wvi8s",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_ewrntp",
+      "ToSocketIndex": 0
+    },
+    {
+      "FromNodeId": "n_qw4zkw",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_z8udun",
+      "ToSocketIndex": 0
+    },
+    {
+      "FromNodeId": "n_g0aykx",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_qw4zkw",
+      "ToSocketIndex": 0
+    },
+    {
+      "FromNodeId": "n_ewrntp",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_qw4zkw",
+      "ToSocketIndex": 1
+    },
+    {
+      "FromNodeId": "n_flue57",
+      "FromSocketIndex": 2,
+      "ToNodeId": "n_x01ipq",
+      "ToSocketIndex": 0
+    },
+    {
+      "FromNodeId": "n_x01ipq",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_ipoeeq",
+      "ToSocketIndex": 0
+    },
+    {
+      "FromNodeId": "n_tf7ynl",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_ywpyg3",
+      "ToSocketIndex": 0
+    },
+    {
+      "FromNodeId": "n_ywpyg3",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_flue57",
+      "ToSocketIndex": 0
+    },
+    {
+      "FromNodeId": "n_ywpyg3",
+      "FromSocketIndex": 1,
+      "ToNodeId": "n_xivjif",
+      "ToSocketIndex": 0
+    },
+    {
+      "FromNodeId": "n_z8udun",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_gkhhok",
+      "ToSocketIndex": 0
+    },
+    {
+      "FromNodeId": "n_ipoeeq",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_qw4zkw",
+      "ToSocketIndex": 2
+    },
+    {
+      "FromNodeId": "n_xivjif",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_wi689r",
+      "ToSocketIndex": 0
+    },
+    {
+      "FromNodeId": "n_wi689r",
+      "FromSocketIndex": 0,
+      "ToNodeId": "n_qw4zkw",
+      "ToSocketIndex": 3
+    }
+  ]
+}
