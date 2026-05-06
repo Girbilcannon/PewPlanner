@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using PewPlanner.Models;
 using PewPlanner.UI;
@@ -28,11 +29,17 @@ namespace PewPlanner
         private Label _lblPropHeader = null!;
         private Label _lblNodeName = null!;
         private TextBox _txtNodeName = null!;
+        private Label _lblPosX = null!;
+        private NumericUpDown _numNodeX = null!;
+        private Label _lblPosY = null!;
+        private NumericUpDown _numNodeY = null!;
         private Label _lblNotes = null!;
         private TextBox _txtNotes = null!;
         private Label _lblColor = null!;
         private Panel _pnlColorPreview = null!;
         private HudButton _btnPickColor = null!;
+        private CheckBox _chkSnapToGrid = null!;
+        private CheckBox _chkShowGrid = null!;
 
         private HudButton _btnSave = null!;
         private HudButton _btnLoad = null!;
@@ -176,25 +183,51 @@ namespace PewPlanner
             Theme.ApplyTextBoxStyle(_txtNodeName);
             _txtNodeName.TextChanged += NodeName_TextChanged;
 
-            _lblNotes = Theme.MakeLabel("Notes", 18, 124, true, true);
-            _txtNotes = new TextBox
+            _lblPosX = Theme.MakeLabel("X", 18, 124, true, true);
+            _numNodeX = new NumericUpDown
             {
                 Left = 18,
                 Top = 146,
+                Width = 126,
+                Minimum = -100000,
+                Maximum = 100000,
+                DecimalPlaces = 0,
+                Increment = 1
+            };
+            _numNodeX.ValueChanged += NodeX_ValueChanged;
+
+            _lblPosY = Theme.MakeLabel("Y", 162, 124, true, true);
+            _numNodeY = new NumericUpDown
+            {
+                Left = 162,
+                Top = 146,
+                Width = 126,
+                Minimum = -100000,
+                Maximum = 100000,
+                DecimalPlaces = 0,
+                Increment = 1
+            };
+            _numNodeY.ValueChanged += NodeY_ValueChanged;
+
+            _lblNotes = Theme.MakeLabel("Notes", 18, 190, true, true);
+            _txtNotes = new TextBox
+            {
+                Left = 18,
+                Top = 212,
                 Width = 270,
-                Height = 220,
+                Height = 140,
                 Multiline = true,
                 ScrollBars = ScrollBars.Vertical
             };
             Theme.ApplyTextBoxStyle(_txtNotes);
             _txtNotes.TextChanged += Notes_TextChanged;
 
-            _lblColor = Theme.MakeLabel("Node Color", 18, 384, true, true);
+            _lblColor = Theme.MakeLabel("Node Color", 18, 370, true, true);
 
             _pnlColorPreview = new Panel
             {
                 Left = 18,
-                Top = 408,
+                Top = 394,
                 Width = 44,
                 Height = 24,
                 BackColor = Theme.CardBack
@@ -209,20 +242,61 @@ namespace PewPlanner
             {
                 Text = "Pick Color",
                 Left = 74,
-                Top = 403,
+                Top = 389,
                 Width = 110,
                 Height = 32
             };
             _btnPickColor.Click += (_, _) => PickNodeColor();
 
+            _chkSnapToGrid = new CheckBox
+            {
+                Text = "Snap node top-left to grid (N)",
+                Left = 18,
+                Top = 442,
+                Width = 260,
+                Height = 24,
+                ForeColor = Theme.Text,
+                BackColor = Color.Transparent
+            };
+            _chkSnapToGrid.CheckedChanged += (_, _) =>
+            {
+                if (_updatingProperties || _graph == null)
+                    return;
+                _graph.SetSnapToGrid(_chkSnapToGrid.Checked);
+            };
+
+            _chkShowGrid = new CheckBox
+            {
+                Text = "Show grid",
+                Left = 18,
+                Top = 470,
+                Width = 260,
+                Height = 24,
+                ForeColor = Theme.Text,
+                BackColor = Color.Transparent,
+                Checked = true
+            };
+            _chkShowGrid.CheckedChanged += (_, _) =>
+            {
+                if (_updatingProperties || _graph == null)
+                    return;
+                _graph.SetShowGrid(_chkShowGrid.Checked);
+            };
+
             _rightPane.Controls.Add(_lblPropHeader);
             _rightPane.Controls.Add(_lblNodeName);
             _rightPane.Controls.Add(_txtNodeName);
+            _rightPane.Controls.Add(_lblPosX);
+            _rightPane.Controls.Add(_numNodeX);
+            _rightPane.Controls.Add(_lblPosY);
+            _rightPane.Controls.Add(_numNodeY);
             _rightPane.Controls.Add(_lblNotes);
             _rightPane.Controls.Add(_txtNotes);
             _rightPane.Controls.Add(_lblColor);
             _rightPane.Controls.Add(_pnlColorPreview);
             _rightPane.Controls.Add(_btnPickColor);
+            _rightPane.Controls.Add(_chkSnapToGrid);
+            _rightPane.Controls.Add(_chkShowGrid);
 
             Controls.Add(_rightPane);
         }
@@ -377,23 +451,41 @@ namespace PewPlanner
             _currentNode = node;
             _updatingProperties = true;
 
-            bool hasNode = node != null;
+            int selectedCount = _graph?.SelectedNodes.Count ?? 0;
+            bool hasNode = selectedCount > 0;
 
             _txtNodeName.Enabled = hasNode;
+            _numNodeX.Enabled = hasNode;
+            _numNodeY.Enabled = hasNode;
             _txtNotes.Enabled = hasNode;
             _btnPickColor.Enabled = hasNode;
 
-            if (node == null)
+            if (!hasNode || node == null)
             {
+                _lblPropHeader.Text = "Properties";
                 _txtNodeName.Text = string.Empty;
+                _numNodeX.Value = 0;
+                _numNodeY.Value = 0;
                 _txtNotes.Text = string.Empty;
                 _pnlColorPreview.BackColor = Theme.CardBack;
             }
             else
             {
+                _lblPropHeader.Text = selectedCount == 1
+                    ? "Properties"
+                    : $"Properties ({selectedCount} selected)";
+
                 _txtNodeName.Text = node.Title;
+                _numNodeX.Value = ClampDecimal(node.X, _numNodeX.Minimum, _numNodeX.Maximum);
+                _numNodeY.Value = ClampDecimal(node.Y, _numNodeY.Minimum, _numNodeY.Maximum);
                 _txtNotes.Text = node.Notes;
                 _pnlColorPreview.BackColor = node.NodeColor;
+            }
+
+            if (_graph != null && _chkSnapToGrid != null && _chkShowGrid != null)
+            {
+                _chkSnapToGrid.Checked = _graph.SnapToGrid;
+                _chkShowGrid.Checked = _graph.ShowGrid;
             }
 
             _pnlColorPreview.Invalidate();
@@ -402,40 +494,56 @@ namespace PewPlanner
 
         private void NodeName_TextChanged(object? sender, EventArgs e)
         {
-            if (_updatingProperties || _currentNode == null)
+            if (_updatingProperties || _graph.SelectedNodes.Count == 0)
                 return;
 
-            _currentNode.Title = _txtNodeName.Text;
-            _graph.RefreshSelectedNode();
+            _graph.SetSelectedTitle(_txtNodeName.Text);
+        }
+
+        private void NodeX_ValueChanged(object? sender, EventArgs e)
+        {
+            if (_updatingProperties || _graph.SelectedNodes.Count == 0)
+                return;
+
+            _graph.SetSelectedX((int)_numNodeX.Value);
+        }
+
+        private void NodeY_ValueChanged(object? sender, EventArgs e)
+        {
+            if (_updatingProperties || _graph.SelectedNodes.Count == 0)
+                return;
+
+            _graph.SetSelectedY((int)_numNodeY.Value);
         }
 
         private void Notes_TextChanged(object? sender, EventArgs e)
         {
-            if (_updatingProperties || _currentNode == null)
+            if (_updatingProperties || _graph.SelectedNodes.Count == 0)
                 return;
 
-            _currentNode.Notes = _txtNotes.Text;
+            _graph.SetSelectedNotes(_txtNotes.Text);
         }
 
         private void PickNodeColor()
         {
-            if (_currentNode == null)
+            if (_graph.SelectedNodes.Count == 0)
                 return;
+
+            Color startingColor = _currentNode?.NodeColor ?? Color.FromArgb(34, 39, 47);
 
             using var dialog = new ColorDialog
             {
                 FullOpen = true,
                 AnyColor = true,
                 SolidColorOnly = false,
-                Color = _currentNode.NodeColor
+                Color = startingColor
             };
 
             if (dialog.ShowDialog(this) == DialogResult.OK)
             {
-                _currentNode.NodeColor = dialog.Color;
+                _graph.SetSelectedColor(dialog.Color);
                 _pnlColorPreview.BackColor = dialog.Color;
                 _pnlColorPreview.Invalidate();
-                _graph.RefreshSelectedNode();
             }
         }
 
@@ -548,6 +656,13 @@ namespace PewPlanner
             }
 
             base.WndProc(ref m);
+        }
+
+        private static decimal ClampDecimal(decimal value, decimal min, decimal max)
+        {
+            if (value < min) return min;
+            if (value > max) return max;
+            return value;
         }
 
         private static Point GetMousePointFromLParam(IntPtr lParam)
