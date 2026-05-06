@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
@@ -12,9 +13,16 @@ namespace PewPlanner.UI
     public class GraphCanvas : Control
     {
         private readonly GraphDocument _document = new();
+        private readonly List<GraphNode> _selectedNodes = new();
+        private readonly Dictionary<GraphNode, Point> _dragStartPositions = new();
 
         private GraphNode? _dragNode;
-        private Point _dragOffsetWorld;
+        private Point _dragStartWorld;
+        private bool _isDraggingNodes;
+
+        private bool _isMarqueeSelecting;
+        private Point _marqueeStartScreen;
+        private Point _marqueeCurrentScreen;
 
         private bool _isMiddlePanning;
         private Point _lastPanScreenPoint;
@@ -33,8 +41,14 @@ namespace PewPlanner.UI
         private const float MaxZoom = 2.5f;
         private const float ZoomStep = 0.1f;
         private const int PanStep = 40;
+        private const int SnapGridSize = 20;
 
         public event Action<GraphNode?>? SelectedNodeChanged;
+
+        public IReadOnlyList<GraphNode> SelectedNodes => _selectedNodes;
+
+        public bool SnapToGrid { get; private set; }
+        public bool ShowGrid { get; private set; } = true;
 
         public GraphCanvas()
         {
@@ -75,18 +89,73 @@ namespace PewPlanner.UI
                 Invalidate();
         }
 
-        public void ZoomIn()
-        {
-            ZoomAt(new Point(Width / 2, Height / 2), ZoomStep);
-        }
-
-        public void ZoomOut()
-        {
-            ZoomAt(new Point(Width / 2, Height / 2), -ZoomStep);
-        }
+        public void ZoomIn() => ZoomAt(new Point(Width / 2, Height / 2), ZoomStep);
+        public void ZoomOut() => ZoomAt(new Point(Width / 2, Height / 2), -ZoomStep);
 
         public void RefreshSelectedNode()
         {
+            Invalidate();
+        }
+
+        public void ToggleSnapToGrid()
+        {
+            SnapToGrid = !SnapToGrid;
+            Invalidate();
+        }
+
+        public void ToggleGrid()
+        {
+            ShowGrid = !ShowGrid;
+            Invalidate();
+        }
+
+        public void SetSnapToGrid(bool enabled)
+        {
+            SnapToGrid = enabled;
+            Invalidate();
+        }
+
+        public void SetShowGrid(bool enabled)
+        {
+            ShowGrid = enabled;
+            Invalidate();
+        }
+
+        public void SetSelectedTitle(string title)
+        {
+            foreach (GraphNode node in _selectedNodes)
+                node.Title = title;
+            Invalidate();
+        }
+
+        public void SetSelectedNotes(string notes)
+        {
+            foreach (GraphNode node in _selectedNodes)
+                node.Notes = notes;
+        }
+
+        public void SetSelectedColor(Color color)
+        {
+            foreach (GraphNode node in _selectedNodes)
+                node.NodeColor = color;
+            Invalidate();
+        }
+
+        public void SetSelectedX(int x)
+        {
+            // Typed property values are intentional and exact.
+            // Grid snapping only applies while dragging or creating nodes.
+            foreach (GraphNode node in _selectedNodes)
+                node.X = x;
+            Invalidate();
+        }
+
+        public void SetSelectedY(int y)
+        {
+            // Typed property values are intentional and exact.
+            // Grid snapping only applies while dragging or creating nodes.
+            foreach (GraphNode node in _selectedNodes)
+                node.Y = y;
             Invalidate();
         }
 
@@ -100,17 +169,27 @@ namespace PewPlanner.UI
             }
             else
             {
-                Point screenCenter = new(Width / 2, Height / 2);
-                Point worldCenter = ScreenToWorld(screenCenter);
-
                 int nodeNumber = GetNextDefaultNodeNumber();
-                node = new GraphNode($"Node {nodeNumber}", worldCenter.X - 85, worldCenter.Y - 40);
+
+                // First node should establish a clean graph origin.
+                // After that, new standalone nodes appear near the current view center.
+                if (_document.Nodes.Count == 0)
+                {
+                    node = new GraphNode($"Node {nodeNumber}", 0, 0);
+                }
+                else
+                {
+                    Point screenCenter = new(Width / 2, Height / 2);
+                    Point worldCenter = ScreenToWorld(screenCenter);
+                    node = new GraphNode($"Node {nodeNumber}", worldCenter.X, worldCenter.Y);
+                }
             }
 
+            ApplySnapToNode(node);
             _document.Nodes.Add(node);
 
             _selectedConnection = null;
-            SetSelectedNode(node);
+            SetOnlySelectedNode(node);
             EnsureSpareInput(node);
             EnsureSpareOutput(node);
             Invalidate();
@@ -146,7 +225,7 @@ namespace PewPlanner.UI
             _document.Connections.Clear();
             _selectedConnection = null;
             _pendingSocket = null;
-            SetSelectedNode(null);
+            SetOnlySelectedNode(null);
             _panX = Width * 0.5f;
             _panY = Height * 0.5f;
             _zoom = 1.0f;
@@ -188,13 +267,15 @@ namespace PewPlanner.UI
 
         protected override bool IsInputKey(Keys keyData)
         {
-            return keyData switch
+            Keys code = keyData & Keys.KeyCode;
+            return code switch
             {
                 Keys.Delete => true,
                 Keys.Left => true,
                 Keys.Right => true,
                 Keys.Up => true,
                 Keys.Down => true,
+                Keys.N => true,
                 _ => base.IsInputKey(keyData)
             };
         }
@@ -209,10 +290,14 @@ namespace PewPlanner.UI
             DrawConnections(e.Graphics);
             DrawPendingConnection(e.Graphics);
             DrawNodes(e.Graphics);
+            DrawMarquee(e.Graphics);
         }
 
         private void DrawGrid(Graphics g)
         {
+            if (!ShowGrid)
+                return;
+
             using var penMinor = new Pen(Theme.GridMinor);
             using var penMajor = new Pen(Theme.GridMajor);
 
@@ -270,10 +355,11 @@ namespace PewPlanner.UI
 
             int cornerRadius = ScaleSize(14);
             int headerHeight = ScaleSize(34);
+            bool isSelected = _selectedNodes.Contains(node);
 
             using var cardPath = Theme.CreateRoundRect(bounds, cornerRadius);
             using var cardBrush = new SolidBrush(node.NodeColor);
-            using var borderPen = new Pen(node == _selectedNode ? Theme.Accent : Theme.Border, node == _selectedNode ? 2f : 1f);
+            using var borderPen = new Pen(isSelected ? Theme.Accent : Theme.Border, isSelected ? 2.5f : 1f);
 
             g.FillPath(cardBrush, cardPath);
             g.DrawPath(borderPen, cardPath);
@@ -291,12 +377,7 @@ namespace PewPlanner.UI
             using (var font = new Font("Segoe UI Semibold", fontSize, FontStyle.Bold))
             using (var textBrush = new SolidBrush(Theme.Text))
             {
-                g.DrawString(
-                    node.Title,
-                    font,
-                    textBrush,
-                    bounds.X + ScaleSize(12),
-                    bounds.Y + ScaleSize(9));
+                g.DrawString(node.Title, font, textBrush, bounds.X + ScaleSize(12), bounds.Y + ScaleSize(9));
             }
 
             for (int i = 0; i < node.Inputs.Count; i++)
@@ -336,12 +417,7 @@ namespace PewPlanner.UI
 
                 using var pen = new Pen(selected ? Theme.Warning : Theme.Accent, selected ? 3f : 2f);
 
-                g.DrawBezier(
-                    pen,
-                    p1,
-                    new Point(p1.X + handle, p1.Y),
-                    new Point(p2.X - handle, p2.Y),
-                    p2);
+                g.DrawBezier(pen, p1, new Point(p1.X + handle, p1.Y), new Point(p2.X - handle, p2.Y), p2);
             }
         }
 
@@ -353,37 +429,30 @@ namespace PewPlanner.UI
             Point start = WorldToScreen(_pendingSocket.GetPosition());
             Point end = WorldToScreen(_mouseWorldPoint);
 
-            using var pen = new Pen(Theme.Warning, 2f)
-            {
-                DashStyle = DashStyle.Dash
-            };
-
+            using var pen = new Pen(Theme.Warning, 2f) { DashStyle = DashStyle.Dash };
             int handle = Math.Max(40, ScaleSize(60));
 
             if (_pendingSocket.IsInput)
-            {
-                g.DrawBezier(
-                    pen,
-                    end,
-                    new Point(end.X + handle, end.Y),
-                    new Point(start.X - handle, start.Y),
-                    start);
-            }
+                g.DrawBezier(pen, end, new Point(end.X + handle, end.Y), new Point(start.X - handle, start.Y), start);
             else
-            {
-                g.DrawBezier(
-                    pen,
-                    start,
-                    new Point(start.X + handle, start.Y),
-                    new Point(end.X - handle, end.Y),
-                    end);
-            }
+                g.DrawBezier(pen, start, new Point(start.X + handle, start.Y), new Point(end.X - handle, end.Y), end);
+        }
+
+        private void DrawMarquee(Graphics g)
+        {
+            if (!_isMarqueeSelecting)
+                return;
+
+            Rectangle rect = GetScreenMarqueeRectangle();
+            using var fill = new SolidBrush(Color.FromArgb(45, Theme.Accent));
+            using var pen = new Pen(Theme.Accent, 1.5f) { DashStyle = DashStyle.Dash };
+            g.FillRectangle(fill, rect);
+            g.DrawRectangle(pen, rect);
         }
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
-
             Focus();
 
             Point worldPoint = ScreenToWorld(e.Location);
@@ -407,7 +476,7 @@ namespace PewPlanner.UI
             if (socket != null)
             {
                 _selectedConnection = null;
-                SetSelectedNode(null);
+                SetOnlySelectedNode(null);
                 _pendingSocket = socket;
                 Invalidate();
                 return;
@@ -417,9 +486,27 @@ namespace PewPlanner.UI
             if (node != null)
             {
                 _selectedConnection = null;
-                SetSelectedNode(node);
+
+                if ((ModifierKeys & Keys.Shift) == Keys.Shift)
+                {
+                    ToggleNodeSelection(node);
+                }
+                else if (!_selectedNodes.Contains(node))
+                {
+                    SetOnlySelectedNode(node);
+                }
+                else
+                {
+                    RaiseSelectedNodeChanged();
+                }
+
                 _dragNode = node;
-                _dragOffsetWorld = new Point(worldPoint.X - node.X, worldPoint.Y - node.Y);
+                _isDraggingNodes = true;
+                _dragStartWorld = worldPoint;
+                _dragStartPositions.Clear();
+                foreach (GraphNode selected in _selectedNodes)
+                    _dragStartPositions[selected] = new Point(selected.X, selected.Y);
+
                 Invalidate();
                 return;
             }
@@ -428,13 +515,18 @@ namespace PewPlanner.UI
             if (connection != null)
             {
                 _selectedConnection = connection;
-                SetSelectedNode(null);
+                SetOnlySelectedNode(null);
                 Invalidate();
                 return;
             }
 
             _selectedConnection = null;
-            SetSelectedNode(null);
+            if ((ModifierKeys & Keys.Shift) != Keys.Shift)
+                SetOnlySelectedNode(null);
+
+            _isMarqueeSelecting = true;
+            _marqueeStartScreen = e.Location;
+            _marqueeCurrentScreen = e.Location;
             Invalidate();
         }
 
@@ -454,25 +546,38 @@ namespace PewPlanner.UI
                 return;
             }
 
-            if (_dragNode != null)
+            if (_isMarqueeSelecting)
             {
-                _dragNode.X = worldPoint.X - _dragOffsetWorld.X;
-                _dragNode.Y = worldPoint.Y - _dragOffsetWorld.Y;
+                _marqueeCurrentScreen = e.Location;
+                Invalidate();
+                return;
+            }
+
+            if (_isDraggingNodes && _dragNode != null)
+            {
+                int dx = worldPoint.X - _dragStartWorld.X;
+                int dy = worldPoint.Y - _dragStartWorld.Y;
+
+                foreach (var pair in _dragStartPositions)
+                {
+                    GraphNode node = pair.Key;
+                    Point start = pair.Value;
+                    node.X = start.X + dx;
+                    node.Y = start.Y + dy;
+                    ApplySnapToNode(node);
+                }
+
                 Invalidate();
                 return;
             }
 
             if (_pendingSocket != null)
-            {
                 Invalidate();
-                return;
-            }
         }
 
         protected override void OnMouseUp(MouseEventArgs e)
         {
             base.OnMouseUp(e);
-
             Point worldPoint = ScreenToWorld(e.Location);
 
             if (e.Button == MouseButtons.Middle)
@@ -482,9 +587,20 @@ namespace PewPlanner.UI
                 return;
             }
 
-            if (_dragNode != null)
+            if (_isMarqueeSelecting)
+            {
+                CompleteMarqueeSelection();
+                _isMarqueeSelecting = false;
+                Invalidate();
+                return;
+            }
+
+            if (_isDraggingNodes)
             {
                 _dragNode = null;
+                _isDraggingNodes = false;
+                _dragStartPositions.Clear();
+                RaiseSelectedNodeChanged();
                 return;
             }
 
@@ -515,9 +631,33 @@ namespace PewPlanner.UI
         {
             base.OnKeyDown(e);
 
+            if (e.KeyCode == Keys.N)
+            {
+                ToggleSnapToGrid();
+                e.Handled = true;
+                return;
+            }
+
             if (e.KeyCode == Keys.Delete)
             {
                 DeleteSelection();
+                e.Handled = true;
+                return;
+            }
+
+            if (_selectedNodes.Count > 0 && (e.KeyCode == Keys.Left || e.KeyCode == Keys.Right || e.KeyCode == Keys.Up || e.KeyCode == Keys.Down))
+            {
+                int amount = (e.Modifiers & Keys.Shift) == Keys.Shift ? 10 : 1;
+                int dx = e.KeyCode == Keys.Left ? -amount : e.KeyCode == Keys.Right ? amount : 0;
+                int dy = e.KeyCode == Keys.Up ? -amount : e.KeyCode == Keys.Down ? amount : 0;
+                foreach (GraphNode node in _selectedNodes)
+                {
+                    node.X += dx;
+                    node.Y += dy;
+                    ApplySnapToNode(node);
+                }
+                RaiseSelectedNodeChanged();
+                Invalidate();
                 e.Handled = true;
                 return;
             }
@@ -606,10 +746,11 @@ namespace PewPlanner.UI
                 return;
             }
 
-            if (_selectedNode != null)
+            if (_selectedNodes.Count > 0)
             {
-                _document.Connections.RemoveAll(c => c.From.Node == _selectedNode || c.To.Node == _selectedNode);
-                _document.Nodes.Remove(_selectedNode);
+                var deleteSet = _selectedNodes.ToHashSet();
+                _document.Connections.RemoveAll(c => deleteSet.Contains(c.From.Node) || deleteSet.Contains(c.To.Node));
+                _document.Nodes.RemoveAll(deleteSet.Contains);
                 ClearSelection();
                 CleanupSockets();
                 Invalidate();
@@ -636,12 +777,15 @@ namespace PewPlanner.UI
             {
                 int nodeNumber = GetNextDefaultNodeNumber();
                 var node = new GraphNode($"Node {nodeNumber}", worldLocation.X, worldLocation.Y);
+                ApplySnapToNode(node);
                 _document.Nodes.Add(node);
-                SetSelectedNode(node);
+                SetOnlySelectedNode(node);
                 _selectedConnection = null;
                 Invalidate();
             });
 
+            menu.Items.Add(SnapToGrid ? "Disable Snap (N)" : "Enable Snap (N)", null, (_, _) => ToggleSnapToGrid());
+            menu.Items.Add(ShowGrid ? "Hide Grid" : "Show Grid", null, (_, _) => ToggleGrid());
             menu.Show(this, screenLocation);
         }
 
@@ -740,12 +884,7 @@ namespace PewPlanner.UI
                 Point a = connection.From.GetPosition();
                 Point b = connection.To.GetPosition();
 
-                Rectangle roughBounds = Rectangle.FromLTRB(
-                    Math.Min(a.X, b.X) - 12,
-                    Math.Min(a.Y, b.Y) - 12,
-                    Math.Max(a.X, b.X) + 12,
-                    Math.Max(a.Y, b.Y) + 12);
-
+                Rectangle roughBounds = Rectangle.FromLTRB(Math.Min(a.X, b.X) - 12, Math.Min(a.Y, b.Y) - 12, Math.Max(a.X, b.X) + 12, Math.Max(a.Y, b.Y) + 12);
                 if (roughBounds.Contains(worldPoint))
                     return connection;
             }
@@ -790,7 +929,6 @@ namespace PewPlanner.UI
 
             RefreshSocketFlags(from.Node);
             RefreshSocketFlags(to.Node);
-
             Invalidate();
         }
 
@@ -859,20 +997,9 @@ namespace PewPlanner.UI
                 node.Outputs[i].Index = i;
         }
 
-        private int WorldToScreenX(int worldX)
-        {
-            return (int)Math.Round((worldX * _zoom) + _panX);
-        }
-
-        private int WorldToScreenY(int worldY)
-        {
-            return (int)Math.Round((worldY * _zoom) + _panY);
-        }
-
-        private Point WorldToScreen(Point worldPoint)
-        {
-            return new Point(WorldToScreenX(worldPoint.X), WorldToScreenY(worldPoint.Y));
-        }
+        private int WorldToScreenX(int worldX) => (int)Math.Round((worldX * _zoom) + _panX);
+        private int WorldToScreenY(int worldY) => (int)Math.Round((worldY * _zoom) + _panY);
+        private Point WorldToScreen(Point worldPoint) => new(WorldToScreenX(worldPoint.X), WorldToScreenY(worldPoint.Y));
 
         private Rectangle WorldToScreen(Rectangle worldRect)
         {
@@ -885,15 +1012,10 @@ namespace PewPlanner.UI
 
         private Point ScreenToWorld(Point screenPoint)
         {
-            return new Point(
-                (int)Math.Round((screenPoint.X - _panX) / _zoom),
-                (int)Math.Round((screenPoint.Y - _panY) / _zoom));
+            return new Point((int)Math.Round((screenPoint.X - _panX) / _zoom), (int)Math.Round((screenPoint.Y - _panY) / _zoom));
         }
 
-        private int ScaleSize(int value)
-        {
-            return Math.Max(1, (int)Math.Round(value * _zoom));
-        }
+        private int ScaleSize(int value) => Math.Max(1, (int)Math.Round(value * _zoom));
 
         private static int FloorToMultiple(int value, int multiple)
         {
@@ -901,30 +1023,100 @@ namespace PewPlanner.UI
                 return value;
 
             int remainder = value % multiple;
-
             if (remainder == 0)
                 return value;
-
             if (value >= 0)
                 return value - remainder;
-
             return value - remainder - multiple;
+        }
+
+        private void SetOnlySelectedNode(GraphNode? node)
+        {
+            _selectedNodes.Clear();
+            if (node != null)
+                _selectedNodes.Add(node);
+            SetSelectedNode(node);
+        }
+
+        private void ToggleNodeSelection(GraphNode node)
+        {
+            if (_selectedNodes.Contains(node))
+                _selectedNodes.Remove(node);
+            else
+                _selectedNodes.Add(node);
+
+            SetSelectedNode(_selectedNodes.LastOrDefault());
         }
 
         private void SetSelectedNode(GraphNode? node)
         {
             bool changed = !ReferenceEquals(_selectedNode, node);
             _selectedNode = node;
-
             if (changed)
                 SelectedNodeChanged?.Invoke(_selectedNode);
+            else
+                SelectedNodeChanged?.Invoke(_selectedNode);
+        }
+
+        private void RaiseSelectedNodeChanged()
+        {
+            SelectedNodeChanged?.Invoke(_selectedNode);
         }
 
         private void ClearSelection()
         {
             _selectedConnection = null;
             _pendingSocket = null;
-            SetSelectedNode(null);
+            SetOnlySelectedNode(null);
+        }
+
+        private Rectangle GetScreenMarqueeRectangle()
+        {
+            return Rectangle.FromLTRB(
+                Math.Min(_marqueeStartScreen.X, _marqueeCurrentScreen.X),
+                Math.Min(_marqueeStartScreen.Y, _marqueeCurrentScreen.Y),
+                Math.Max(_marqueeStartScreen.X, _marqueeCurrentScreen.X),
+                Math.Max(_marqueeStartScreen.Y, _marqueeCurrentScreen.Y));
+        }
+
+        private void CompleteMarqueeSelection()
+        {
+            Rectangle screenRect = GetScreenMarqueeRectangle();
+            if (screenRect.Width < 4 && screenRect.Height < 4)
+                return;
+
+            Rectangle worldRect = Rectangle.FromLTRB(
+                Math.Min(ScreenToWorld(screenRect.Location).X, ScreenToWorld(new Point(screenRect.Right, screenRect.Bottom)).X),
+                Math.Min(ScreenToWorld(screenRect.Location).Y, ScreenToWorld(new Point(screenRect.Right, screenRect.Bottom)).Y),
+                Math.Max(ScreenToWorld(screenRect.Location).X, ScreenToWorld(new Point(screenRect.Right, screenRect.Bottom)).X),
+                Math.Max(ScreenToWorld(screenRect.Location).Y, ScreenToWorld(new Point(screenRect.Right, screenRect.Bottom)).Y));
+
+            if ((ModifierKeys & Keys.Shift) != Keys.Shift)
+                _selectedNodes.Clear();
+
+            foreach (GraphNode node in _document.Nodes)
+            {
+                if (worldRect.IntersectsWith(node.Bounds) && !_selectedNodes.Contains(node))
+                    _selectedNodes.Add(node);
+            }
+
+            SetSelectedNode(_selectedNodes.LastOrDefault());
+        }
+
+        private void ApplySnapToNode(GraphNode node)
+        {
+            if (!SnapToGrid)
+                return;
+
+            // Snap the stored node position itself.
+            // PewPlanner stores X/Y as top-left values, so snapping should use top-left too.
+            node.X = SnapCoordinate(node.X);
+            node.Y = SnapCoordinate(node.Y);
+        }
+
+        private static int SnapCoordinate(int value)
+        {
+            return (int)Math.Round(value / (double)SnapGridSize) * SnapGridSize;
         }
     }
 }
